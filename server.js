@@ -67,11 +67,13 @@ function escapeHtml(text) {
  */
 function generateThermalLabelHtml({ firstName, orderName, orderDate }) {
   // Format the order date (or fallback to current date)
+  // Use America/Toronto timezone to match AD-Bits location
   const date = orderDate ? new Date(orderDate) : new Date();
   const formattedDate = date.toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'America/Vancouver'
   });
 
   return `<!DOCTYPE html>
