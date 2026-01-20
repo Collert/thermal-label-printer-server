@@ -36,29 +36,12 @@ app.get('/', (req, res) => {
 
 // Print label endpoint - serves the HTML for printing
 app.get('/print', (req, res) => {
-  const { orderId, orderName, orderDate } = req.query;
-
-  // Get shipping address from query params (URL encoded JSON)
-  let shippingAddress = {};
-  let lineItems = [];
-
-  try {
-    if (req.query.shippingAddress) {
-      shippingAddress = JSON.parse(decodeURIComponent(req.query.shippingAddress));
-    }
-    if (req.query.lineItems) {
-      lineItems = JSON.parse(decodeURIComponent(req.query.lineItems));
-    }
-  } catch (e) {
-    console.error('Error parsing query params:', e);
-  }
+  const { firstName, orderName, orderDate } = req.query;
 
   const html = generateThermalLabelHtml({
-    id: orderId,
-    name: orderName || 'Order',
-    createdAt: orderDate,
-    shippingAddress,
-    lineItems
+    firstName: firstName || 'Customer',
+    orderName: orderName || 'Order',
+    orderDate: orderDate || null
   });
 
   res.setHeader('Content-Type', 'text/html');
@@ -82,20 +65,10 @@ function escapeHtml(text) {
 /**
  * Generates thermal label HTML for 4x6 inch labels - AD-Bits branded
  */
-function generateThermalLabelHtml(order) {
-  const shippingAddress = order.shippingAddress || {};
-
-  // Get first name from shipping address - try firstName, then parse from full name
-  let firstName = 'Customer';
-  if (shippingAddress.firstName) {
-    firstName = shippingAddress.firstName;
-  } else if (shippingAddress.name) {
-    firstName = shippingAddress.name.split(' ')[0];
-  }
-
+function generateThermalLabelHtml({ firstName, orderName, orderDate }) {
   // Format the order date (or fallback to current date)
-  const orderDate = order.createdAt ? new Date(order.createdAt) : new Date();
-  const formattedDate = orderDate.toLocaleDateString('en-US', {
+  const date = orderDate ? new Date(orderDate) : new Date();
+  const formattedDate = date.toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric'
@@ -106,7 +79,7 @@ function generateThermalLabelHtml(order) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shipping Label - ${escapeHtml(order.name)}</title>
+  <title>Shipping Label - ${escapeHtml(orderName)}</title>
   <style>
     @page {
       size: 4in 6in;
@@ -250,7 +223,7 @@ function generateThermalLabelHtml(order) {
     <!-- Order info -->
     <div class="order-info">
       <div class="date">${formattedDate}</div>
-      <div class="order-number">Order ${escapeHtml(order.name)}</div>
+      <div class="order-number">Order ${escapeHtml(orderName)}</div>
     </div>
 
     <!-- Footer with social -->
