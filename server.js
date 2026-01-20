@@ -251,6 +251,12 @@ function generateThermalLabelHtml({ firstName, orderName, orderDate }) {
       </div>
     </div>
   </div>
+  <script>
+    // Auto-trigger print dialog when page loads
+    window.onload = function() {
+      window.print();
+    };
+  </script>
 </body>
 </html>`;
 }
