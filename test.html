@@ -1,82 +1,4 @@
-import express from 'express';
-import cors from 'cors';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Load logo as base64 at startup
-let logoBase64 = '';
-try {
-  const logoPath = join(__dirname, 'logo.png');
-  const logoBuffer = readFileSync(logoPath);
-  logoBase64 = logoBuffer.toString('base64');
-} catch (e) {
-  console.error('Could not load logo.png:', e.message);
-}
-
-// Enable CORS for Shopify admin
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-app.use(express.json());
-
-// Health check endpoint
-app.get('/', (req, res) => {
-  res.send('Thermal Label Printer App is running');
-});
-
-// Print label endpoint - serves the HTML for printing
-app.get('/print', (req, res) => {
-  const { firstName, orderName, orderDate } = req.query;
-
-  const html = generateThermalLabelHtml({
-    firstName: firstName || 'Customer',
-    orderName: orderName || 'Order',
-    orderDate: orderDate || null
-  });
-
-  res.setHeader('Content-Type', 'text/html');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.send(html);
-});
-
-/**
- * Escape HTML special characters
- */
-function escapeHtml(text) {
-  if (!text) return '';
-  return String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-/**
- * Generates thermal label HTML for 4x6 inch labels - AD-Bits branded
- */
-function generateThermalLabelHtml({ firstName, orderName, orderDate }) {
-  // Format the order date (or fallback to current date)
-  // Use America/Toronto timezone to match AD-Bits location
-  const date = orderDate ? new Date(orderDate) : new Date();
-  const formattedDate = date.toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'America/Vancouver'
-  });
-
-  return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -256,9 +178,4 @@ function generateThermalLabelHtml({ firstName, orderName, orderDate }) {
     </footer>
 </body>
 
-</html>`;
-}
-
-app.listen(PORT, () => {
-  console.log(`Thermal Label Printer server running on port ${PORT}`);
-});
+</html>
