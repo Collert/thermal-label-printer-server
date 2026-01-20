@@ -217,7 +217,7 @@ function generateThermalLabelHtml({ firstName, orderName, orderDate }) {
 
     <!-- Logo -->
     <div class="logo-section">
-        <img class="logo" src="./logo.png" alt="AD-Bits Logo" />
+        <img class="logo" src="data:image/png;base64,${logoBase64}" alt="AD-Bits Logo" />
         <div class="brand-name">AD-Bits</div>
     </div>
 
