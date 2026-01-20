@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
 
 // Print label endpoint - serves the HTML for printing
 app.get('/print', (req, res) => {
-    const { orderId, orderName, labelCount = 1 } = req.query;
+    const { orderId, orderName, orderDate } = req.query;
 
     // Get shipping address from query params (URL encoded JSON)
     let shippingAddress = {};
@@ -56,6 +56,7 @@ app.get('/print', (req, res) => {
     const html = generateThermalLabelHtml({
         id: orderId,
         name: orderName || 'Order',
+        createdAt: orderDate,
         shippingAddress,
         lineItems
     });
@@ -84,12 +85,17 @@ function escapeHtml(text) {
 function generateThermalLabelHtml(order) {
     const shippingAddress = order.shippingAddress || {};
 
-    // Get first name from shipping address
-    const firstName = shippingAddress.firstName ||
-        (shippingAddress.name ? shippingAddress.name.split(' ')[0] : 'Customer');
+    // Get first name from shipping address - try firstName, then parse from full name
+    let firstName = 'Customer';
+    if (shippingAddress.firstName) {
+        firstName = shippingAddress.firstName;
+    } else if (shippingAddress.name) {
+        firstName = shippingAddress.name.split(' ')[0];
+    }
 
-    // Format the current date
-    const formattedDate = new Date().toLocaleDateString('en-US', {
+    // Format the order date (or fallback to current date)
+    const orderDate = order.createdAt ? new Date(order.createdAt) : new Date();
+    const formattedDate = orderDate.toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'short',
         year: 'numeric'
