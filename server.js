@@ -13,95 +13,95 @@ const PORT = process.env.PORT || 3000;
 // Load logo as base64 at startup
 let logoBase64 = '';
 try {
-    const logoPath = join(__dirname, 'logo.png');
-    const logoBuffer = readFileSync(logoPath);
-    logoBase64 = logoBuffer.toString('base64');
+  const logoPath = join(__dirname, 'logo.png');
+  const logoBuffer = readFileSync(logoPath);
+  logoBase64 = logoBuffer.toString('base64');
 } catch (e) {
-    console.error('Could not load logo.png:', e.message);
+  console.error('Could not load logo.png:', e.message);
 }
 
 // Enable CORS for Shopify admin
 app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
 
 // Health check endpoint
 app.get('/', (req, res) => {
-    res.send('Thermal Label Printer App is running');
+  res.send('Thermal Label Printer App is running');
 });
 
 // Print label endpoint - serves the HTML for printing
 app.get('/print', (req, res) => {
-    const { orderId, orderName, orderDate } = req.query;
+  const { orderId, orderName, orderDate } = req.query;
 
-    // Get shipping address from query params (URL encoded JSON)
-    let shippingAddress = {};
-    let lineItems = [];
+  // Get shipping address from query params (URL encoded JSON)
+  let shippingAddress = {};
+  let lineItems = [];
 
-    try {
-        if (req.query.shippingAddress) {
-            shippingAddress = JSON.parse(decodeURIComponent(req.query.shippingAddress));
-        }
-        if (req.query.lineItems) {
-            lineItems = JSON.parse(decodeURIComponent(req.query.lineItems));
-        }
-    } catch (e) {
-        console.error('Error parsing query params:', e);
+  try {
+    if (req.query.shippingAddress) {
+      shippingAddress = JSON.parse(decodeURIComponent(req.query.shippingAddress));
     }
+    if (req.query.lineItems) {
+      lineItems = JSON.parse(decodeURIComponent(req.query.lineItems));
+    }
+  } catch (e) {
+    console.error('Error parsing query params:', e);
+  }
 
-    const html = generateThermalLabelHtml({
-        id: orderId,
-        name: orderName || 'Order',
-        createdAt: orderDate,
-        shippingAddress,
-        lineItems
-    });
+  const html = generateThermalLabelHtml({
+    id: orderId,
+    name: orderName || 'Order',
+    createdAt: orderDate,
+    shippingAddress,
+    lineItems
+  });
 
-    res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.send(html);
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.send(html);
 });
 
 /**
  * Escape HTML special characters
  */
 function escapeHtml(text) {
-    if (!text) return '';
-    return String(text)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 /**
  * Generates thermal label HTML for 4x6 inch labels - AD-Bits branded
  */
 function generateThermalLabelHtml(order) {
-    const shippingAddress = order.shippingAddress || {};
+  const shippingAddress = order.shippingAddress || {};
 
-    // Get first name from shipping address - try firstName, then parse from full name
-    let firstName = 'Customer';
-    if (shippingAddress.firstName) {
-        firstName = shippingAddress.firstName;
-    } else if (shippingAddress.name) {
-        firstName = shippingAddress.name.split(' ')[0];
-    }
+  // Get first name from shipping address - try firstName, then parse from full name
+  let firstName = 'Customer';
+  if (shippingAddress.firstName) {
+    firstName = shippingAddress.firstName;
+  } else if (shippingAddress.name) {
+    firstName = shippingAddress.name.split(' ')[0];
+  }
 
-    // Format the order date (or fallback to current date)
-    const orderDate = order.createdAt ? new Date(order.createdAt) : new Date();
-    const formattedDate = orderDate.toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    });
+  // Format the order date (or fallback to current date)
+  const orderDate = order.createdAt ? new Date(order.createdAt) : new Date();
+  const formattedDate = orderDate.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
 
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -281,5 +281,5 @@ function generateThermalLabelHtml(order) {
 }
 
 app.listen(PORT, () => {
-    console.log(`Thermal Label Printer server running on port ${PORT}`);
+  console.log(`Thermal Label Printer server running on port ${PORT}`);
 });
