@@ -210,9 +210,8 @@ function generateThermalLabelHtml({ firstName, orderName, orderDate }) {
 
     <!-- Thank you message -->
     <div class="thank-you">
-        <!-- <div class="thank-you-text">THANK YOU,</div> -->
+        <div class="thank-you-text">THANK YOU,</div>
         <div class="customer-name">${escapeHtml(firstName.toUpperCase())}</div>
-        <div class="customer-name">SHANE</div>
     </div>
 
     <!-- Logo -->
